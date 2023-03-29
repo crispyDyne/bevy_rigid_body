@@ -1,47 +1,7 @@
-// allow unused code for now
-#![allow(dead_code)]
-
 use crate::joint::{Base, Joint};
-use crate::state::{get_model_dstate, set_model_state, StateVector};
 use bevy::prelude::*;
 
 use crate::algorithms::{apply_external_update, loop_1_update, loop_2_update, loop_3_update};
-
-pub fn all_loops(
-    states: &StateVector,
-    base_query: &Query<Entity, With<Base>>,
-    joint_children_query: &Query<&Children, With<Joint>>,
-    mut joint_query: &mut Query<&mut Joint>,
-) -> StateVector {
-    set_model_state(&mut joint_query, &states);
-
-    base_loop(
-        &base_query,
-        &joint_children_query,
-        &mut joint_query,
-        Some(loop_1_update),
-        None,
-    );
-
-    base_loop(
-        &base_query,
-        &joint_children_query,
-        &mut joint_query,
-        None,
-        Some(loop_2_update),
-    );
-
-    base_loop(
-        &base_query,
-        &joint_children_query,
-        &mut joint_query,
-        Some(loop_3_update),
-        None,
-    );
-
-    let dstate = get_model_dstate(&joint_query);
-    dstate
-}
 
 pub fn loop_1(
     base_query: Query<Entity, With<Base>>,

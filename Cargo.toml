@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 bevy = "0.10.0"
 nalgebra = "0.32.2"
+bevy_integrator = { path = "../bevy_integrator" }

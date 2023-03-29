@@ -1,9 +1,10 @@
 use bevy::prelude::*;
+use bevy_integrator::integrator::Stateful;
+use std::ops::{Add, Mul};
 
 use crate::mesh::Mesh as RBDA_Mesh;
 use crate::sva::{Force, Inertia, InertiaAB, Motion, Xform};
 
-use crate::state::State;
 #[derive(Default, Debug)]
 pub enum JointType {
     Base,
@@ -132,30 +133,6 @@ impl Joint {
             ..Default::default()
         }
     }
-
-    pub fn get_state(&self) -> State {
-        State {
-            q: self.q,
-            qd: self.qd,
-        }
-    }
-
-    pub fn set_state(&mut self, state: State) {
-        self.q = state.q;
-        self.qd = state.qd;
-    }
-
-    pub fn get_dstate(&self) -> State {
-        State {
-            q: self.qd,
-            qd: self.qdd,
-        }
-    }
-
-    pub fn set_dstate(&mut self, dstate: State) {
-        self.qd = dstate.q;
-        self.qdd = dstate.qd;
-    }
 }
 
 pub fn bevy_joint_positions(mut joint_transform_query: Query<(&mut Joint, &mut Transform)>) {
@@ -163,5 +140,76 @@ pub fn bevy_joint_positions(mut joint_transform_query: Query<(&mut Joint, &mut T
         transform.translation = Vec3::from_slice(joint.xl.position.data.as_slice());
         let mat = Mat3::from_cols_slice(joint.xl.rotation.data.as_slice()).transpose();
         transform.rotation = Quat::from_mat3(&mat);
+    }
+}
+
+impl Stateful for Joint {
+    type State = JointState;
+    fn get_state(&self) -> Self::State {
+        Self::State {
+            q: self.q,
+            qd: self.qd,
+        }
+    }
+
+    fn set_state(&mut self, state: &Self::State) {
+        self.q = state.q;
+        self.qd = state.qd;
+    }
+
+    fn get_dstate(&self) -> Self::State {
+        Self::State {
+            q: self.qd,
+            qd: self.qdd,
+        }
+    }
+
+    fn set_dstate(&mut self, dstate: Self::State) {
+        self.qd = dstate.q;
+        self.qdd = dstate.qd;
+    }
+
+    fn reset(&mut self) {
+        self.qdd = 0.;
+        self.f_ext = Force::zero();
+        self.tau = 0.;
+    }
+}
+
+#[derive(Clone)]
+pub struct JointState {
+    pub q: f32,
+    pub qd: f32,
+}
+
+impl JointState {
+    pub fn new(q: f32, qd: f32) -> Self {
+        Self { q, qd }
+    }
+    pub fn zero() -> Self {
+        Self::new(0., 0.)
+    }
+    pub fn from_joint(joint: &Joint) -> Self {
+        Self::new(joint.q, joint.qd)
+    }
+}
+
+impl Add for JointState {
+    type Output = JointState;
+    fn add(self, other: JointState) -> JointState {
+        JointState {
+            q: self.q + other.q,
+            qd: self.qd + other.qd,
+        }
+    }
+}
+
+impl Mul<f32> for JointState {
+    type Output = JointState;
+    fn mul(self, other: f32) -> JointState {
+        JointState {
+            q: self.q * other,
+            qd: self.qd * other,
+        }
     }
 }

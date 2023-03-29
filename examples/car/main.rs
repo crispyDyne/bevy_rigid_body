@@ -6,15 +6,16 @@ mod enviornment;
 pub mod physics;
 mod schedule;
 
-use bevy_rigid_body::joint::bevy_joint_positions;
+use bevy_integrator::integrator::{initialize_state, integrator_schedule, PhysicsSchedule, Solver};
+use bevy_rigid_body::joint::{bevy_joint_positions, Joint};
 use build::build_model;
 use camera_az_el::camera_builder;
 
 use enviornment::build_environment;
-use schedule::{create_schedule, physics_schedule, PhysicsSchedule};
+use schedule::create_schedule;
 
 // set a larger timestep if the animation lags
-const FIXED_TIMESTEP: f32 = 0.002; // 500 fps!!! ( and it can go faster! )
+const FIXED_TIMESTEP: f32 = 0.002; // 0.002 -> 500 fps
 
 // Main function
 fn main() {
@@ -46,7 +47,9 @@ fn main() {
         .add_startup_system(setup_system) // setup the car model and environment
         .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP)) // set the fixed timestep
         .add_schedule(PhysicsSchedule, schedule) // add the physics schedule
-        .add_system(physics_schedule.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
+        .insert_resource(Solver::RK4) // set the solver to use
+        .add_startup_system(initialize_state::<Joint>.in_base_set(StartupSet::PostStartup)) // setup the car model and environment
+        .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
         .add_system(bevy_joint_positions) // update the bevy joint positions
         .run();
 }

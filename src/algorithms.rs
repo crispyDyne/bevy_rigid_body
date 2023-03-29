@@ -1,9 +1,6 @@
-use crate::sva::Force;
-use bevy::prelude::*;
-
-use crate::sva::{Motion, Xform};
-
 use crate::joint::{Joint, JointType};
+use crate::sva::{Force, Motion, Xform};
+use bevy::prelude::*;
 
 pub fn loop_1_update(joint: &mut Joint, parent: &Joint) {
     // reset joint
@@ -63,7 +60,7 @@ pub fn loop_3_update(joint: &mut Joint, parent: &Joint) {
     let dd_inv = 1. / joint.dd;
     let te = joint.u - (joint.uu.m.dot(&ap.w) + joint.uu.f.dot(&ap.v));
     joint.qdd = dd_inv * te;
-    joint.a = ap + (joint.qdd * joint.s)
+    joint.a = ap + (joint.qdd * joint.s);
 }
 
 pub fn integrate_joint_state(fixed_time: Res<FixedTime>, mut joint_query: Query<&mut Joint>) {
