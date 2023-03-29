@@ -1,0 +1,167 @@
+use bevy::prelude::*;
+
+use crate::mesh::Mesh as RBDA_Mesh;
+use crate::sva::{Force, Inertia, InertiaAB, Motion, Xform};
+
+use crate::state::State;
+#[derive(Default, Debug)]
+pub enum JointType {
+    Base,
+    #[default]
+    Rx,
+    Ry,
+    Rz,
+    Px,
+    Py,
+    Pz,
+}
+
+#[derive(Component, Default, Debug)]
+pub struct Base;
+
+#[derive(Component, Default, Debug)]
+pub struct Joint {
+    pub joint_type: JointType,
+    pub name: String,
+
+    // joint definition
+    pub s: Motion,
+    pub i: Inertia,
+    pub xt: Xform,
+
+    // joint state (and solution)
+    pub q: f32,
+    pub qd: f32,
+    pub qdd: f32,
+
+    // common parameters
+    pub xl: Xform,
+    pub xj: Xform,
+    pub x: Xform,
+    pub v: Motion,
+    pub vj: Motion,
+    pub c: Motion,
+    pub a: Motion,
+
+    // algorithm specific parameters
+    pub iaa: InertiaAB,
+    pub paa: Force,
+    pub tau: f32,
+    pub f_ext: Force,
+    pub dd: f32,
+    pub u: f32,
+    pub uu: Force,
+    pub meshes: Vec<RBDA_Mesh>,
+    pub stiffness: f32,
+    pub damping: f32,
+}
+
+impl Joint {
+    pub fn base(a: Motion) -> Self {
+        Self {
+            a,
+            joint_type: JointType::Base,
+            ..Default::default()
+        }
+    }
+    pub fn rx(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([0., 0., 0.], [1., 0., 0.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Rx,
+            ..Default::default()
+        }
+    }
+
+    pub fn ry(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([0., 0., 0.], [0., 1., 0.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Ry,
+            ..Default::default()
+        }
+    }
+
+    pub fn rz(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([0., 0., 0.], [0., 0., 1.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Rz,
+            ..Default::default()
+        }
+    }
+    pub fn px(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([1., 0., 0.], [0., 0., 0.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Px,
+            ..Default::default()
+        }
+    }
+    pub fn py(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([0., 1., 0.], [0., 0., 0.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Py,
+            ..Default::default()
+        }
+    }
+    pub fn pz(inertia: Inertia, xt: Xform) -> Self {
+        let s = Motion::new([0., 0., 1.], [0., 0., 0.]);
+
+        Self {
+            i: inertia,
+            xt,
+            s,
+            joint_type: JointType::Pz,
+            ..Default::default()
+        }
+    }
+
+    pub fn get_state(&self) -> State {
+        State {
+            q: self.q,
+            qd: self.qd,
+        }
+    }
+
+    pub fn set_state(&mut self, state: State) {
+        self.q = state.q;
+        self.qd = state.qd;
+    }
+
+    pub fn get_dstate(&self) -> State {
+        State {
+            q: self.qd,
+            qd: self.qdd,
+        }
+    }
+
+    pub fn set_dstate(&mut self, dstate: State) {
+        self.qd = dstate.q;
+        self.qdd = dstate.qd;
+    }
+}
+
+pub fn bevy_joint_positions(mut joint_transform_query: Query<(&mut Joint, &mut Transform)>) {
+    for (joint, mut transform) in joint_transform_query.iter_mut() {
+        transform.translation = Vec3::from_slice(joint.xl.position.data.as_slice());
+        let mat = Mat3::from_cols_slice(joint.xl.rotation.data.as_slice()).transpose();
+        transform.rotation = Quat::from_mat3(&mat);
+    }
+}
