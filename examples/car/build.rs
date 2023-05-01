@@ -250,7 +250,7 @@ fn build_wheel(
     let inertia = Inertia::new(
         wheel_mass,
         Vector::new(0., 0., 0.),
-        wheel_mass * Matrix::from_diagonal(&Vector::new(moi_xz, moi_y, moi_xz)),
+        Matrix::from_diagonal(&Vector::new(moi_xz, moi_y, moi_xz)),
     );
     let mut ry = Joint::ry(inertia, Xform::identity());
     ry.name = ("wheel_".to_owned() + name).to_string();
