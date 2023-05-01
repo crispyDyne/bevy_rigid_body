@@ -1,5 +1,6 @@
 use crate::physics::{
-    driven_wheel_system, steering_system, suspension_system, tire_contact_system,
+    brake_wheel_system, driven_wheel_system, steering_system, suspension_system,
+    tire_contact_system,
 };
 use bevy::prelude::*;
 
@@ -11,7 +12,12 @@ pub fn create_schedule() -> Schedule {
     let mut physics_schedule = Schedule::new();
     physics_schedule.add_physics_systems::<Joint, _, _, _>(
         (steering_system, loop_1).chain(),
-        (suspension_system, tire_contact_system, driven_wheel_system),
+        (
+            suspension_system,
+            tire_contact_system,
+            driven_wheel_system,
+            brake_wheel_system,
+        ),
         (apply_external_forces, loop_23).chain(),
     );
 

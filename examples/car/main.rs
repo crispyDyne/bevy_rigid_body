@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 mod build;
 mod camera_az_el;
+mod control;
 mod enviornment;
 pub mod physics;
 mod schedule;
@@ -11,6 +12,7 @@ use bevy_rigid_body::joint::{bevy_joint_positions, Joint};
 use build::build_model;
 use camera_az_el::camera_builder;
 
+use control::CarControl;
 use enviornment::build_environment;
 use schedule::create_schedule;
 
@@ -51,6 +53,8 @@ fn main() {
         .add_startup_system(initialize_state::<Joint>.in_base_set(StartupSet::PostStartup)) // setup the car model and environment
         .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
         .add_system(bevy_joint_positions) // update the bevy joint positions
+        .add_system(control::gamepad_system) // control the car with a gamepad
+        .init_resource::<CarControl>()
         .run();
 }
 

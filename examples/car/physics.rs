@@ -1,9 +1,9 @@
-use std::f32::consts::PI;
-
 use bevy::prelude::*;
 
 use bevy_rigid_body::joint::Joint;
 use bevy_rigid_body::sva::{Force, Vector};
+
+use crate::control::CarControl;
 
 #[derive(Component)]
 pub struct Suspension {
@@ -124,9 +124,8 @@ pub fn tire_contact_system(mut joints: Query<(&mut Joint, &TireContact)>) {
 
 #[derive(Component)]
 pub struct Steering;
-pub fn steering_system(mut joints: Query<(&mut Joint, &Steering)>, time: Res<Time>) {
-    let t = time.elapsed_seconds();
-    let steer_angle = 15.0_f32.to_radians() + 10.0_f32.to_radians() * (2. * PI * t).sin();
+pub fn steering_system(mut joints: Query<(&mut Joint, &Steering)>, control: Res<CarControl>) {
+    let steer_angle = control.steering * 30_f32.to_radians();
     for (mut joint, _) in joints.iter_mut() {
         joint.q = steer_angle;
     }
@@ -134,12 +133,19 @@ pub fn steering_system(mut joints: Query<(&mut Joint, &Steering)>, time: Res<Tim
 
 #[derive(Component)]
 pub struct DrivenWheel;
-pub fn driven_wheel_system(mut joints: Query<(&mut Joint, &DrivenWheel)>) {
-    let speed_target = 5.0;
-    let rad_per_seconds_target = speed_target / 0.25; // 25 m/s * 4 ticks per second
-    let error_gain = 5.0; // 5 Nm per rad/s error
+pub fn driven_wheel_system(
+    mut joints: Query<(&mut Joint, &DrivenWheel)>,
+    control: Res<CarControl>,
+) {
     for (mut joint, _) in joints.iter_mut() {
-        let rad_per_second_error = rad_per_seconds_target - joint.qd;
-        joint.tau += error_gain * rad_per_second_error; // add a torque to the joint to correct the speed error
+        joint.tau += control.throttle * 400.0;
+    }
+}
+
+#[derive(Component)]
+pub struct BrakeWheel;
+pub fn brake_wheel_system(mut joints: Query<(&mut Joint, &BrakeWheel)>, control: Res<CarControl>) {
+    for (mut joint, _) in joints.iter_mut() {
+        joint.tau += -control.brake * 400.0;
     }
 }

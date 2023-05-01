@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_rigid_body::joint::{Base, Joint};
 use bevy_rigid_body::sva::{Inertia, Matrix, Motion, Vector, Xform};
 
-use crate::physics::{DrivenWheel, Steering, Suspension, TireContact};
+use crate::physics::{BrakeWheel, DrivenWheel, Steering, Suspension, TireContact};
 
 pub fn build_model(
     commands: &mut Commands,
@@ -262,6 +262,7 @@ fn build_wheel(
     if driven {
         wheel_e.insert(DrivenWheel);
     }
+    wheel_e.insert(BrakeWheel);
 
     wheel_e.set_parent(parent_id);
     let wheel_id = wheel_e.id();
