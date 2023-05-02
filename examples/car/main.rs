@@ -3,7 +3,7 @@ use bevy::prelude::*;
 mod build;
 mod camera_az_el;
 mod control;
-mod enviornment;
+mod environment;
 pub mod physics;
 mod schedule;
 
@@ -13,7 +13,7 @@ use build::build_model;
 use camera_az_el::camera_builder;
 
 use control::CarControl;
-use enviornment::build_environment;
+use environment::build_environment;
 use schedule::create_schedule;
 
 // set a larger timestep if the animation lags
