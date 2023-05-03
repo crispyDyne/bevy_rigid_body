@@ -25,44 +25,48 @@ fn main() {
     // Create the physics schedule
     let schedule = create_schedule();
     // Create App
-    App::new()
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                resolution: (1200., 900.).into(),
-                title: "Car Demo".to_string(),
-                resizable: true,
-                ..default()
-            }),
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            resolution: (1200., 900.).into(),
+            title: "Car Demo".to_string(),
+            resizable: true,
             ..default()
-        }))
-        .add_startup_system(camera_builder(
-            Vec3 {
-                x: 0.,
-                y: 10.,
-                z: 1.,
-            },
-            0.0_f32.to_radians(),
-            10.0_f32.to_radians(),
-            20.,
-            camera_az_el::UpDirection::Z,
-        ))
-        .add_system(camera_az_el::az_el_camera) // setup the camera
-        .add_startup_system(setup_system) // setup the car model and environment
-        .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP)) // set the fixed timestep
-        .add_schedule(PhysicsSchedule, schedule) // add the physics schedule
-        .insert_resource(Solver::RK4) // set the solver to use
-        .add_startup_system(create_recorder)
-        .add_startup_systems(
-            (initialize_state::<Joint>, initialize_recorder::<Joint>)
-                .chain()
-                .in_base_set(StartupSet::PostStartup),
-        )
-        .add_system(recorder_system::<Joint>)
-        .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
-        .add_system(bevy_joint_positions) // update the bevy joint positions
-        .add_system(control::gamepad_system) // control the car with a gamepad
-        .init_resource::<CarControl>()
-        .run();
+        }),
+        ..default()
+    }))
+    .add_startup_system(camera_builder(
+        Vec3 {
+            x: 0.,
+            y: 10.,
+            z: 1.,
+        },
+        0.0_f32.to_radians(),
+        10.0_f32.to_radians(),
+        20.,
+        camera_az_el::UpDirection::Z,
+    ))
+    .add_system(camera_az_el::az_el_camera) // setup the camera
+    .add_startup_system(setup_system) // setup the car model and environment
+    .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP)) // set the fixed timestep
+    .add_schedule(PhysicsSchedule, schedule) // add the physics schedule
+    .insert_resource(Solver::RK4) // set the solver to use
+    .add_startup_systems(
+        (initialize_state::<Joint>,)
+            .chain()
+            .in_base_set(StartupSet::PostStartup),
+    )
+    .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
+    .add_system(bevy_joint_positions) // update the bevy joint positions
+    .add_system(control::gamepad_system) // control the car with a gamepad
+    .init_resource::<CarControl>();
+
+    if false {
+        app.add_startup_system(create_recorder)
+            .add_startup_system(initialize_recorder::<Joint>.in_base_set(StartupSet::PostStartup))
+            .add_system(recorder_system::<Joint>);
+    }
+    app.run();
 }
 
 pub fn setup_system(
