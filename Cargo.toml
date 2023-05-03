@@ -9,6 +9,7 @@ edition = "2021"
 bevy = "0.10.1"
 nalgebra = "0.32.2"
 bevy_integrator = { path = "../bevy_integrator" }
+rusqlite = { version = "0.29.0", features = ["bundled"] }
 
 # Enable only a small amount of optimization in debug mode
 [profile.dev]

@@ -143,6 +143,12 @@ pub fn bevy_joint_positions(mut joint_transform_query: Query<(&mut Joint, &mut T
     }
 }
 
+impl Into<f32> for JointState {
+    fn into(self) -> f32 {
+        self.q
+    }
+}
+
 impl Stateful for Joint {
     type State = JointState;
     fn get_state(&self) -> Self::State {
@@ -173,6 +179,10 @@ impl Stateful for Joint {
         self.qdd = 0.;
         self.f_ext = Force::zero();
         self.tau = 0.;
+    }
+
+    fn get_name(&self) -> String {
+        self.name.clone()
     }
 }
 

@@ -12,6 +12,7 @@ use bevy_rigid_body::joint::{bevy_joint_positions, Joint};
 use build::build_model;
 use camera_az_el::camera_builder;
 
+use bevy_integrator::recorder::{create_recorder, initialize_recorder, recorder_system};
 use control::CarControl;
 use environment::build_environment;
 use schedule::create_schedule;
@@ -50,7 +51,13 @@ fn main() {
         .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP)) // set the fixed timestep
         .add_schedule(PhysicsSchedule, schedule) // add the physics schedule
         .insert_resource(Solver::RK4) // set the solver to use
-        .add_startup_system(initialize_state::<Joint>.in_base_set(StartupSet::PostStartup)) // setup the car model and environment
+        .add_startup_system(create_recorder)
+        .add_startup_systems(
+            (initialize_state::<Joint>, initialize_recorder::<Joint>)
+                .chain()
+                .in_base_set(StartupSet::PostStartup),
+        )
+        .add_system(recorder_system::<Joint>)
         .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
         .add_system(bevy_joint_positions) // update the bevy joint positions
         .add_system(control::gamepad_system) // control the car with a gamepad
