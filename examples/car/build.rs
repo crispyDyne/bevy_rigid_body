@@ -13,14 +13,7 @@ pub fn build_model(
 ) {
     // create base
     let base = Joint::base(Motion::new([0., 0., 9.81], [0., 0., 0.]));
-    let base_id = commands
-        .spawn(base)
-        .insert(Base)
-        .insert(SpatialBundle {
-            // sets visibility and position of the base
-            ..Default::default()
-        })
-        .id();
+    let base_id = commands.spawn((base, Base, SpatialBundle::default())).id();
 
     // chassis
     let dimensions = [3.0_f32, 1.5, 0.4]; // approximate dimensions of a car
@@ -79,53 +72,33 @@ fn build_chassis(
     parent_id: Entity,
 ) -> Entity {
     // x degree of freedom (absolute coordinate system, not relative to car)
-    let mut px = Joint::px(Inertia::zero(), Xform::identity());
-    px.name = "chassis_px".to_string();
-    let mut px_e = commands.spawn(px);
-    px_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let px = Joint::px("chassis_px".to_string(), Inertia::zero(), Xform::identity());
+    let mut px_e = commands.spawn((px, SpatialBundle::default()));
     px_e.set_parent(parent_id);
     let px_id = px_e.id();
 
     // y degree of freedom (absolute coordinate system, not relative to car)
-    let mut py = Joint::py(Inertia::zero(), Xform::identity());
-    py.name = "chassis_py".to_string();
-    let mut py_e = commands.spawn(py);
-    py_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let py = Joint::py("chassis_py".to_string(), Inertia::zero(), Xform::identity());
+    let mut py_e = commands.spawn((py, SpatialBundle::default()));
     py_e.set_parent(px_id);
     let py_id = py_e.id();
 
     // z degree of freedom (always points "up", relative to absolute coordinate system)
-    let mut pz = Joint::pz(Inertia::zero(), Xform::identity());
-    pz.name = "chassis_pz".to_string();
+    let mut pz = Joint::pz("chassis_pz".to_string(), Inertia::zero(), Xform::identity());
     pz.q = 0.3 + 0.25; // start the car above the ground (this should be done somewhere else)
-    let mut pz_e = commands.spawn(pz);
-    pz_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let mut pz_e = commands.spawn((pz, SpatialBundle::default()));
     pz_e.set_parent(py_id);
     let pz_id = pz_e.id();
 
     // yaw degree of freedom (rotation around z axis)
-    let mut rz = Joint::rz(Inertia::zero(), Xform::identity());
-    rz.name = "chassis_rz".to_string();
-    let mut rz_e = commands.spawn(rz);
-    rz_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let rz = Joint::rz("chassis_rz".to_string(), Inertia::zero(), Xform::identity());
+    let mut rz_e = commands.spawn((rz, SpatialBundle::default()));
     rz_e.set_parent(pz_id);
     let rz_id = rz_e.id();
 
     // pitch degree of freedom (rotation around y axis)
-    let mut ry = Joint::ry(Inertia::zero(), Xform::identity());
-    ry.name = "chassis_ry".to_string();
-    let mut ry_e = commands.spawn(ry);
-    ry_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let ry = Joint::ry("chassis_ry".to_string(), Inertia::zero(), Xform::identity());
+    let mut ry_e = commands.spawn((ry, SpatialBundle::default()));
     ry_e.set_parent(rz_id);
     let ry_id = ry_e.id();
 
@@ -144,13 +117,9 @@ fn build_chassis(
             )),
     );
 
-    let mut rx = Joint::rx(inertia, Xform::identity());
-    rx.name = "chassis_rx".to_string();
-    let mut rx_e = commands.spawn(rx);
+    let rx = Joint::rx("chassis_rx".to_string(), inertia, Xform::identity());
+    let mut rx_e = commands.spawn((rx, SpatialBundle::default()));
     rx_e.set_parent(ry_id);
-    rx_e.insert(SpatialBundle {
-        ..Default::default()
-    });
     let rx_id = rx_e.id();
     add_cube_mesh(&mut rx_e, meshes, materials, dimensions, Color::GRAY);
 
@@ -171,16 +140,11 @@ fn build_steer(
     );
 
     // create steering joint
-    let mut steer = Joint::rz(Inertia::zero(), xt);
-    steer.name = ("steer_".to_owned() + name).to_string();
+    let name = ("steer_".to_owned() + name).to_string();
+    let steer = Joint::rz(name, Inertia::zero(), xt);
 
     // create steering entity
-    let mut steer_e = commands.spawn(steer);
-    steer_e
-        .insert(SpatialBundle {
-            ..Default::default()
-        })
-        .insert(Steering);
+    let steer_e = commands.spawn((steer, SpatialBundle::default(), Steering));
 
     // set parent
     let steering_id = steer_e.id();
@@ -211,19 +175,19 @@ fn build_suspension(
     );
 
     // create suspension joint
-    let mut susp = Joint::pz(inertia, xt);
-    susp.name = ("susp_".to_owned() + name).to_string();
+    let name = ("susp_".to_owned() + name).to_string();
+    let susp = Joint::pz(name, inertia, xt);
 
     // suspension parameters
     let stiffness: f32 = 1000. * 9.81 / 4. / 0.1; // weight / 4 / spring travel
     let damping = 0.5 * 2. * (stiffness * (1000. / 4.)).sqrt(); // some fraction of critical damping
 
     // create suspension entity
-    let mut susp_e = commands.spawn(susp);
-    susp_e.insert(Suspension::new(stiffness, damping));
-    susp_e.insert(SpatialBundle {
-        ..Default::default()
-    });
+    let mut susp_e = commands.spawn((
+        susp,
+        SpatialBundle::default(),
+        Suspension::new(stiffness, damping),
+    ));
     susp_e.set_parent(parent_id);
     add_cube_mesh(
         &mut susp_e,
@@ -252,8 +216,8 @@ fn build_wheel(
         Vector::new(0., 0., 0.),
         Matrix::from_diagonal(&Vector::new(moi_xz, moi_y, moi_xz)),
     );
-    let mut ry = Joint::ry(inertia, Xform::identity());
-    ry.name = ("wheel_".to_owned() + name).to_string();
+    let name = ("wheel_".to_owned() + name).to_string();
+    let ry = Joint::ry(name, inertia, Xform::identity());
 
     let mut wheel_e = commands.spawn(ry);
     add_wheel_mesh(&mut wheel_e, meshes, materials);

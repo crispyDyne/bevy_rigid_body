@@ -65,10 +65,11 @@ impl Joint {
             ..Default::default()
         }
     }
-    pub fn rx(inertia: Inertia, xt: Xform) -> Self {
+    pub fn rx(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([0., 0., 0.], [1., 0., 0.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
@@ -77,10 +78,11 @@ impl Joint {
         }
     }
 
-    pub fn ry(inertia: Inertia, xt: Xform) -> Self {
+    pub fn ry(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([0., 0., 0.], [0., 1., 0.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
@@ -89,10 +91,11 @@ impl Joint {
         }
     }
 
-    pub fn rz(inertia: Inertia, xt: Xform) -> Self {
+    pub fn rz(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([0., 0., 0.], [0., 0., 1.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
@@ -100,10 +103,11 @@ impl Joint {
             ..Default::default()
         }
     }
-    pub fn px(inertia: Inertia, xt: Xform) -> Self {
+    pub fn px(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([1., 0., 0.], [0., 0., 0.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
@@ -111,10 +115,11 @@ impl Joint {
             ..Default::default()
         }
     }
-    pub fn py(inertia: Inertia, xt: Xform) -> Self {
+    pub fn py(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([0., 1., 0.], [0., 0., 0.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
@@ -122,10 +127,11 @@ impl Joint {
             ..Default::default()
         }
     }
-    pub fn pz(inertia: Inertia, xt: Xform) -> Self {
+    pub fn pz(name: String, inertia: Inertia, xt: Xform) -> Self {
         let s = Motion::new([0., 0., 1.], [0., 0., 0.]);
 
         Self {
+            name,
             i: inertia,
             xt,
             s,
