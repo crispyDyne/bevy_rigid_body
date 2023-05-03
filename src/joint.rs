@@ -53,8 +53,6 @@ pub struct Joint {
     pub u: f32,
     pub uu: Force,
     pub meshes: Vec<RBDA_Mesh>,
-    pub stiffness: f32,
-    pub damping: f32,
 }
 
 impl Joint {
