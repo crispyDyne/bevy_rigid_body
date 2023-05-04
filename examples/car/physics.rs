@@ -83,12 +83,15 @@ pub fn tire_contact_system(mut joints: Query<(&mut Joint, &TireContact)>) {
         // the z axis of the tire reference frame is the cross product of the x and y axes
 
         // each of the reference frames can be written in absolute coordinates or local coordinates
+        // wheel center in absolute coordinates
+        let tire_point_abs = x0.transform_point(Vector::new(0., 0., 0.)); // wheel center in absolute coordinates
 
         // y axis of tire reference frame in local coordinates
         let tire_lat_local = Vector::new(0., 1., 0.); // axis of tire rotation
 
         // y axis of contact reference frame in absolute coordinates
-        let mut contact_lat_abs = x0 * tire_lat_local;
+        let tire_lat_abs = x0 * tire_lat_local;
+        let mut contact_lat_abs = tire_lat_abs;
         contact_lat_abs.z = 0.; // axis of tire rotation projected onto the ground (no z component)
         let contact_lat_abs = contact_lat_abs.normalize();
 
@@ -98,41 +101,37 @@ pub fn tire_contact_system(mut joints: Query<(&mut Joint, &TireContact)>) {
         // x axis of contact reference frame in absolute coordinates
         let contact_forward_abs = contact_lat_abs.cross(&contact_up_abs).normalize();
 
-        // transform the x axis of the contact reference frame into local coordinates
-        let contact_forward_local = joint.x * contact_forward_abs;
+        // up vector of tire reference frame in absolute coordinates
+        let tire_up_abs = contact_forward_abs.cross(&tire_lat_abs).normalize();
 
-        // x axis of tire reference frame in local coordinates
-        let tire_forward_local = contact_forward_local;
-        // z axis of tire reference frame in local coordinates
-        let tire_up_local = tire_forward_local.cross(&tire_lat_local).normalize();
+        // contact point in absolute coordinates
+        let height = tire_point_abs.z / tire_up_abs.z; // height of the wheel center along the tire up vector
+        let contact_point_abs = tire_point_abs - height * tire_up_abs; // subtract the height from the wheel center to get the contact point
+        let deflection = contact.radius - height; // deflection of the tire
 
-        // calculate the lowest point of the tire in local coordinates
-        let contact_local = -contact.radius * tire_up_local; // move down by the radius of the tire
-
-        // find the position of the lowest point of the tire in absolute coordinates
-        let contact_abs = x0.transform_point(contact_local); // transform the point into world coordinates
-        let height = contact_abs.z; // take the z coordinate of the point
-
-        // if the tire is in contact with the ground
-        if height < 0. {
+        if deflection > 0. {
             // vertical forces
-            let spring_force = -contact.stiffness * height;
+            let spring_force = contact.stiffness * deflection;
 
             let v0 = x0 * joint.v;
-            let vel_abs = v0.velocity_point(contact_abs);
-            let damping_force = -contact.damping * vel_abs.vel.z;
+            let vel_abs = v0.velocity_point(contact_point_abs);
+            let damping_force = -contact.damping * tire_up_abs.dot(&vel_abs.vel);
             let vertical_force = spring_force + damping_force;
 
             // ground plane forces
             let forward_vel = vel_abs.vel.dot(&contact_forward_abs); // component of velocity in the forward direction
             let lat_vel = vel_abs.vel.dot(&contact_lat_abs); // component of velocity in the lateral direction
-            let forward_force = -forward_vel * contact.longitudinal_stiffness * vertical_force;
-            let lat_force = -lat_vel * contact.lateral_stiffness * vertical_force;
+            let mut forward_force = -forward_vel * contact.longitudinal_stiffness * vertical_force;
+            let mut lat_force = -lat_vel * contact.lateral_stiffness * vertical_force;
+
+            forward_force = forward_force.max(-vertical_force).min(vertical_force);
+            lat_force = lat_force.max(-vertical_force).min(vertical_force);
+
             let f_abs = Force::force_point(
                 forward_force * contact_forward_abs
                     + lat_force * contact_lat_abs
                     + Vector::new(0., 0., vertical_force),
-                contact_abs,
+                contact_point_abs,
             );
             joint.f_ext += f_abs;
         }
