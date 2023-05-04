@@ -154,6 +154,7 @@ impl Joint {
         };
 
         Self {
+            name: joint_def.name.clone(),
             i,
             xt,
             s,
