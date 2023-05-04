@@ -3,6 +3,7 @@ use bevy_integrator::integrator::Stateful;
 use std::ops::{Add, Mul};
 
 use crate::mesh::Mesh as RBDA_Mesh;
+use crate::serialize::{JointDef, JointTypeDef};
 use crate::sva::{Force, Inertia, InertiaAB, Motion, Xform};
 
 #[derive(Default, Debug)]
@@ -134,6 +135,29 @@ impl Joint {
             xt,
             s,
             joint_type: JointType::Pz,
+            ..Default::default()
+        }
+    }
+
+    pub fn from_joint_def(joint_def: &JointDef) -> Self {
+        let i = Inertia::from_def(&joint_def.inertia);
+        let xt = Xform::from_def(&joint_def.transform);
+
+        let (s, joint_type) = match joint_def.joint_type {
+            JointTypeDef::Base => (Motion::new([0., 0., 0.], [0., 0., 0.]), JointType::Base),
+            JointTypeDef::Rx => (Motion::new([0., 0., 0.], [1., 0., 0.]), JointType::Rx),
+            JointTypeDef::Ry => (Motion::new([0., 0., 0.], [0., 1., 0.]), JointType::Ry),
+            JointTypeDef::Rz => (Motion::new([0., 0., 0.], [0., 0., 1.]), JointType::Rz),
+            JointTypeDef::Px => (Motion::new([1., 0., 0.], [0., 0., 0.]), JointType::Px),
+            JointTypeDef::Py => (Motion::new([0., 1., 0.], [0., 0., 0.]), JointType::Py),
+            JointTypeDef::Pz => (Motion::new([0., 0., 1.], [0., 0., 0.]), JointType::Pz),
+        };
+
+        Self {
+            i,
+            xt,
+            s,
+            joint_type,
             ..Default::default()
         }
     }

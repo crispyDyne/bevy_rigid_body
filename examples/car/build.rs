@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 
@@ -144,7 +146,13 @@ fn build_steer(
     let steer = Joint::rz(name, Inertia::zero(), xt);
 
     // create steering entity
-    let steer_e = commands.spawn((steer, SpatialBundle::default(), Steering));
+    let steer_e = commands.spawn((
+        steer,
+        SpatialBundle::default(),
+        Steering {
+            max_angle: 30. * PI / 180.,
+        },
+    ));
 
     // set parent
     let steering_id = steer_e.id();
@@ -224,9 +232,9 @@ fn build_wheel(
     add_tire_contact(&mut wheel_e);
 
     if driven {
-        wheel_e.insert(DrivenWheel);
+        wheel_e.insert(DrivenWheel { max_torque: 200. });
     }
-    wheel_e.insert(BrakeWheel);
+    wheel_e.insert(BrakeWheel { max_torque: 450. });
 
     wheel_e.set_parent(parent_id);
     let wheel_id = wheel_e.id();

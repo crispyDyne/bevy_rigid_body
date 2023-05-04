@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 use bevy_rigid_body::joint::Joint;
+use bevy_rigid_body::serialize::{
+    BrakeWheelDef, DrivenWheelDef, SteeringDef, SuspensionDef, TireContactDef,
+};
 use bevy_rigid_body::sva::{Force, Vector};
 
 use crate::control::CarControl;
@@ -14,6 +17,10 @@ pub struct Suspension {
 impl Suspension {
     pub fn new(stiffness: f32, damping: f32) -> Self {
         Self { stiffness, damping }
+    }
+
+    pub fn from_def(suspension_def: &SuspensionDef) -> Self {
+        Self::new(suspension_def.stiffness, suspension_def.damping)
     }
 }
 
@@ -47,6 +54,16 @@ impl TireContact {
             longitudinal_stiffness,
             lateral_stiffness,
         }
+    }
+
+    pub fn from_def(tire_contact_def: &TireContactDef) -> Self {
+        Self::new(
+            tire_contact_def.radius,
+            tire_contact_def.stiffness,
+            tire_contact_def.damping,
+            tire_contact_def.longitudinal_stiffness,
+            tire_contact_def.lateral_stiffness,
+        )
     }
 }
 
@@ -123,29 +140,67 @@ pub fn tire_contact_system(mut joints: Query<(&mut Joint, &TireContact)>) {
 }
 
 #[derive(Component)]
-pub struct Steering;
+pub struct Steering {
+    pub max_angle: f32,
+}
+
+impl Steering {
+    pub fn new(max_angle: f32) -> Self {
+        Self { max_angle }
+    }
+
+    pub fn from_def(steering_def: &SteeringDef) -> Self {
+        Self::new(steering_def.max_angle)
+    }
+}
+
 pub fn steering_system(mut joints: Query<(&mut Joint, &Steering)>, control: Res<CarControl>) {
-    let steer_angle = control.steering * 30_f32.to_radians();
-    for (mut joint, _) in joints.iter_mut() {
-        joint.q = steer_angle;
+    for (mut joint, steering) in joints.iter_mut() {
+        joint.q = control.steering * steering.max_angle;
     }
 }
 
 #[derive(Component)]
-pub struct DrivenWheel;
+pub struct DrivenWheel {
+    pub max_torque: f32,
+}
+
+impl DrivenWheel {
+    pub fn new(max_torque: f32) -> Self {
+        Self { max_torque }
+    }
+
+    pub fn from_def(driven_wheel_def: &DrivenWheelDef) -> Self {
+        Self::new(driven_wheel_def.max_torque)
+    }
+}
+
 pub fn driven_wheel_system(
     mut joints: Query<(&mut Joint, &DrivenWheel)>,
     control: Res<CarControl>,
 ) {
-    for (mut joint, _) in joints.iter_mut() {
-        joint.tau += control.throttle * 400.0;
+    for (mut joint, driven_wheel) in joints.iter_mut() {
+        joint.tau += control.throttle * driven_wheel.max_torque;
     }
 }
 
 #[derive(Component)]
-pub struct BrakeWheel;
+pub struct BrakeWheel {
+    pub max_torque: f32,
+}
+
+impl BrakeWheel {
+    pub fn new(max_torque: f32) -> Self {
+        Self { max_torque }
+    }
+
+    pub fn from_def(brake_wheel_def: &BrakeWheelDef) -> Self {
+        Self::new(brake_wheel_def.max_torque)
+    }
+}
+
 pub fn brake_wheel_system(mut joints: Query<(&mut Joint, &BrakeWheel)>, control: Res<CarControl>) {
-    for (mut joint, _) in joints.iter_mut() {
-        joint.tau += -control.brake * 400.0;
+    for (mut joint, brake_wheel) in joints.iter_mut() {
+        joint.tau += -control.brake * brake_wheel.max_torque * joint.qd.signum();
     }
 }

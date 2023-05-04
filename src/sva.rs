@@ -1,7 +1,9 @@
 use core::ops::{Add, Mul, Sub};
 use std::ops::{AddAssign, SubAssign};
 
-use nalgebra::{Matrix3, Vector3};
+use nalgebra::{Matrix3, Quaternion, UnitQuaternion, Vector3};
+
+use crate::serialize::{InertiaDef, TransformDef};
 
 pub type Vector = Vector3<f32>;
 pub type Matrix = Matrix3<f32>;
@@ -117,9 +119,28 @@ impl Xform {
             ..Default::default()
         }
     }
-
     pub fn transform_point(self, point: Vector) -> Vector {
         self.rotation * (point - self.position)
+    }
+    pub fn from_def(transform_def: &TransformDef) -> Self {
+        let position = Vector::new(
+            transform_def.position[0],
+            transform_def.position[1],
+            transform_def.position[2],
+        );
+        let quaternion = Quaternion::new(
+            transform_def.quaternion[0],
+            transform_def.quaternion[1],
+            transform_def.quaternion[2],
+            transform_def.quaternion[3],
+        )
+        .normalize();
+        // wow gross
+        let rotation = UnitQuaternion::from_quaternion(quaternion)
+            .to_rotation_matrix()
+            .matrix()
+            .clone();
+        Self { position, rotation }
     }
 }
 
@@ -353,6 +374,17 @@ impl Inertia {
             c: Vector::zeros(),
             moi: Matrix::zeros(),
         }
+    }
+    pub fn from_def(inertia_def: &InertiaDef) -> Inertia {
+        let ca = inertia_def.center_of_mass;
+        let moia = inertia_def.inertia;
+        let m = inertia_def.mass;
+
+        let c = Vector::new(ca[0], ca[1], ca[2]);
+        let moi = Matrix::new(
+            moia[0], moia[5], moia[4], moia[5], moia[1], moia[3], moia[4], moia[3], moia[2],
+        );
+        Inertia { m, c, moi }
     }
 }
 

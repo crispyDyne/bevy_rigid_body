@@ -1,19 +1,21 @@
 use bevy::prelude::*;
 
 mod build;
+mod build_from_json;
 mod camera_az_el;
 mod control;
+mod create_car_json;
 mod environment;
 pub mod physics;
 mod schedule;
 
 use bevy_integrator::integrator::{initialize_state, integrator_schedule, PhysicsSchedule, Solver};
 use bevy_rigid_body::joint::{bevy_joint_positions, Joint};
-use build::build_model;
 use camera_az_el::camera_builder;
 
 use bevy_integrator::recorder::{create_recorder, initialize_recorder, recorder_system};
 use control::CarControl;
+use create_car_json::car_json;
 use environment::build_environment;
 use schedule::create_schedule;
 
@@ -74,6 +76,11 @@ pub fn setup_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    build_model(&mut commands, &mut meshes, &mut materials);
+    if true {
+        car_json();
+        build_from_json::build_model(&mut commands, &mut meshes, &mut materials);
+    } else {
+        build::build_model(&mut commands, &mut meshes, &mut materials);
+    }
     build_environment(&mut commands, &mut meshes, &mut materials);
 }
