@@ -6,7 +6,8 @@ pub struct CarControl {
     pub steering: f32,
     pub brake: f32,
 }
-pub fn gamepad_system(
+
+pub fn user_control_system(
     keyboard_input: Res<Input<KeyCode>>,
     gamepads: Res<Gamepads>,
     button_axes: Res<Axis<GamepadButton>>,
