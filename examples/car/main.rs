@@ -86,7 +86,6 @@ fn main() {
                 .chain(),
         );
     }
-    app.add_startup_system(load_recorded_data);
 
     // Run the app
     app.run();
