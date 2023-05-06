@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fs::File, io::Read};
 
-use crate::physics::{BrakeWheel, DrivenWheel, Steering, Suspension, TireContact};
-use bevy::prelude::*;
-use bevy_rigid_body::{
+use super::physics::{BrakeWheel, DrivenWheel, Steering, Suspension, TireContact};
+use crate::{
     joint::{Base, Joint},
     serialize::{JointTypeDef, MeshDef, MeshTypeDef, ModelDef, SystemTypeDef},
     sva::Motion,
 };
+use bevy::prelude::*;
 
 pub fn build_model(
     commands: &mut Commands,

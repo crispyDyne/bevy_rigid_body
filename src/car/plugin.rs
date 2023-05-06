@@ -1,21 +1,20 @@
+use crate::{
+    joint::{bevy_joint_positions, Joint},
+    structure::loop_1,
+};
 use bevy::prelude::*;
 use bevy_integrator::{
     integrator::{initialize_state, integrator_schedule, PhysicsSchedule, Solver},
     recorder::{create_recorder, initialize_recorder, load_recorded_data, recorder_system},
 };
-use bevy_rigid_body::{
-    joint::{bevy_joint_positions, Joint},
-    structure::loop_1,
-};
 
-use crate::{
+use super::{
     build, build_from_json,
     camera_az_el::{self, camera_builder},
     control::{self, CarControl},
     create_car_json::car_json,
     environment::build_environment,
     schedule::{create_physics_schedule, set_replay_data},
-    FIXED_TIMESTEP,
 };
 
 #[derive(Default)]
@@ -27,7 +26,7 @@ pub enum Mode {
 }
 
 pub struct CarPlugin {
-    pub(crate) mode: Mode,
+    pub mode: Mode,
 }
 
 impl CarPlugin {
@@ -36,7 +35,7 @@ impl CarPlugin {
         let schedule = create_physics_schedule();
         app.add_schedule(PhysicsSchedule, schedule) // add the physics schedule
             .insert_resource(Solver::RK4) // set the solver to use
-            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP)) // set the fixed timestep
+            .insert_resource(FixedTime::new_from_secs(0.002)) // set the fixed timestep
             .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
             .add_system(control::user_control_system) // control the car with a gamepad
             .init_resource::<CarControl>();

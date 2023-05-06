@@ -1,16 +1,6 @@
 use bevy::prelude::*;
 
-mod build;
-mod build_from_json;
-mod camera_az_el;
-mod control;
-mod create_car_json;
-mod environment;
-mod physics;
-mod plugin;
-mod schedule;
-
-use plugin::{CarPlugin, Mode};
+use bevy_rigid_body::car::plugin::{CarPlugin, Mode};
 
 // set a larger timestep if the animation lags
 const FIXED_TIMESTEP: f32 = 0.002; // 0.002 -> 500 fps

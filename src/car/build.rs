@@ -3,10 +3,12 @@ use std::f32::consts::PI;
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 
-use bevy_rigid_body::joint::{Base, Joint};
-use bevy_rigid_body::sva::{Inertia, Matrix, Motion, Vector, Xform};
+use crate::{
+    joint::{Base, Joint},
+    sva::{Inertia, Matrix, Motion, Vector, Xform},
+};
 
-use crate::physics::{BrakeWheel, DrivenWheel, Steering, Suspension, TireContact};
+use super::physics::{BrakeWheel, DrivenWheel, Steering, Suspension, TireContact};
 
 pub fn build_model(
     commands: &mut Commands,

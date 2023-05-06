@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::{f32::consts::PI, io::Write};
 
-use bevy_rigid_body::serialize::{
+use crate::serialize::{
     BrakeWheelDef, DrivenWheelDef, InertiaDef, JointDef, JointTypeDef, MeshDef, MeshTypeDef,
     ModelDef, SteeringDef, SuspensionDef, SystemDef, SystemTypeDef, TireContactDef, TransformDef,
 };

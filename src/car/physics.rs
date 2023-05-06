@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use bevy_rigid_body::joint::Joint;
-use bevy_rigid_body::serialize::{
-    BrakeWheelDef, DrivenWheelDef, SteeringDef, SuspensionDef, TireContactDef,
+use crate::{
+    joint::Joint,
+    serialize::{BrakeWheelDef, DrivenWheelDef, SteeringDef, SuspensionDef, TireContactDef},
+    sva::{Force, Vector},
 };
-use bevy_rigid_body::sva::{Force, Vector};
 
-use crate::control::CarControl;
+use super::control::CarControl;
 
 #[derive(Component)]
 pub struct Suspension {

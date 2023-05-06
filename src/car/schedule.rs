@@ -1,16 +1,16 @@
-use crate::physics::{
+use super::physics::{
     brake_wheel_system, driven_wheel_system, steering_system, suspension_system,
     tire_contact_system,
 };
 use bevy::prelude::*;
 
+use crate::{
+    joint::Joint,
+    structure::{apply_external_forces, loop_1, loop_23},
+};
 use bevy_integrator::{
     integrator::{PhysicsScheduleExt, PhysicsState, Stateful},
     recorder::RecordedData,
-};
-use bevy_rigid_body::{
-    joint::Joint,
-    structure::{apply_external_forces, loop_1, loop_23},
 };
 
 // simulation
