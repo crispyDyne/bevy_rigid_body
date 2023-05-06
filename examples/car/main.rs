@@ -2,9 +2,6 @@ use bevy::prelude::*;
 
 use bevy_rigid_body::car::plugin::{CarPlugin, Mode};
 
-// set a larger timestep if the animation lags
-const FIXED_TIMESTEP: f32 = 0.002; // 0.002 -> 500 fps
-
 // Main function
 fn main() {
     // Create App
@@ -18,6 +15,9 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugin(CarPlugin { mode: Mode::None })
+        .add_plugin(CarPlugin {
+            mode: Mode::None,
+            time_step: 0.002, // 0.002 -> 500 fps
+        })
         .run(); // update the bevy joint positions
 }

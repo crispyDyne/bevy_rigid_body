@@ -27,6 +27,7 @@ pub enum Mode {
 
 pub struct CarPlugin {
     pub mode: Mode,
+    pub time_step: f32,
 }
 
 impl CarPlugin {
@@ -35,7 +36,7 @@ impl CarPlugin {
         let schedule = create_physics_schedule();
         app.add_schedule(PhysicsSchedule, schedule) // add the physics schedule
             .insert_resource(Solver::RK4) // set the solver to use
-            .insert_resource(FixedTime::new_from_secs(0.002)) // set the fixed timestep
+            .insert_resource(FixedTime::new_from_secs(self.time_step)) // set the fixed timestep
             .add_system(integrator_schedule::<Joint>.in_schedule(CoreSchedule::FixedUpdate)) // run the physics schedule in the fixed timestep loop
             .add_system(control::user_control_system) // control the car with a gamepad
             .init_resource::<CarControl>();
