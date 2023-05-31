@@ -204,7 +204,7 @@ fn build_suspension(
         meshes,
         materials,
         [0.25, 0.25, 0.25],
-        Color::RED,
+        Color::rgba(1.0, 0.5, 0.5, 1.0),
     );
 
     susp_e.id()
@@ -281,16 +281,13 @@ fn add_wheel_mesh(
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     entity.insert(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Box {
-            max_x: 0.2,
-            min_x: -0.2,
-            max_y: 0.1,
-            min_y: -0.1,
-            max_z: 0.2,
-            min_z: -0.2,
+        mesh: meshes.add(Mesh::from(shape::Cylinder {
+            height: 0.2,
+            radius: 0.325,
+            ..Default::default()
         })),
         material: materials.add(StandardMaterial {
-            base_color: Color::BLUE,
+            base_color: Color::rgba(0.5, 0.5, 1.0, 1.0),
             ..default()
         }),
         transform: Transform::from_xyz(0., 0., 0.),

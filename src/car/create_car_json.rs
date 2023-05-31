@@ -242,7 +242,7 @@ fn wheel_joints(
                     radius: 0.325,
                 },
                 transform: ZERO_TRANSFORM,
-                color: [0.5, 0.5, 0.5, 1.],
+                color: [0.5, 0.5, 1.0, 1.],
             }],
         };
         joints.push(wheel);
