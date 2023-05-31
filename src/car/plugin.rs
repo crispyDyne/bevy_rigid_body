@@ -28,6 +28,7 @@ pub enum Mode {
 pub struct CarPlugin {
     pub mode: Mode,
     pub time_step: f32,
+    pub camera: bool,
 }
 
 impl CarPlugin {
@@ -67,18 +68,20 @@ impl Plugin for CarPlugin {
         }
 
         // camera setup
-        app.add_startup_system(camera_builder(
-            Vec3 {
-                x: 0.,
-                y: 10.,
-                z: 1.,
-            },
-            0.0_f32.to_radians(),
-            10.0_f32.to_radians(),
-            20.,
-            camera_az_el::UpDirection::Z,
-        ))
-        .add_system(camera_az_el::az_el_camera); // setup the camera
+        if self.camera {
+            app.add_startup_system(camera_builder(
+                Vec3 {
+                    x: 0.,
+                    y: 10.,
+                    z: 1.,
+                },
+                0.0_f32.to_radians(),
+                10.0_f32.to_radians(),
+                20.,
+                camera_az_el::UpDirection::Z,
+            ))
+            .add_system(camera_az_el::az_el_camera); // setup the cameraw
+        }
 
         // car setup
         app.add_startup_system(setup_system) // setup the car model and environment
