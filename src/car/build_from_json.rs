@@ -18,15 +18,16 @@ pub fn build_model(
     let file_name = "car.json";
     let full_path = format!("{}/{}", folder_name, file_name);
 
-    let mut file = File::open(full_path).unwrap();
-    let mut json = String::new();
-    file.read_to_string(&mut json).unwrap();
+    if let Ok(mut file) = File::open(full_path) {
+        let mut json = String::new();
+        file.read_to_string(&mut json).unwrap();
 
-    // deserialize the model
-    let model: ModelDef = serde_json::from_str(&json).unwrap();
+        // deserialize the model
+        let model: ModelDef = serde_json::from_str(&json).unwrap();
 
-    let joint_ids = build_joints(commands, meshes, materials, &model);
-    build_systems(commands, &model, &joint_ids);
+        let joint_ids = build_joints(commands, meshes, materials, &model);
+        build_systems(commands, &model, &joint_ids);
+    }
 }
 
 pub fn build_joints(
