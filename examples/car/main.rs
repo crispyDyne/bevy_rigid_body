@@ -19,6 +19,7 @@ fn main() {
             mode: Mode::None,
             time_step: 0.002, // 0.002 -> 500 fps
             camera: true,
+            environment: true,
         })
         .run(); // update the bevy joint positions
 }

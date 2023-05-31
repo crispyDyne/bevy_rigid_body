@@ -29,6 +29,7 @@ pub struct CarPlugin {
     pub mode: Mode,
     pub time_step: f32,
     pub camera: bool,
+    pub environment: bool,
 }
 
 impl CarPlugin {
@@ -83,6 +84,10 @@ impl Plugin for CarPlugin {
             .add_system(camera_az_el::az_el_camera); // setup the cameraw
         }
 
+        if self.environment {
+            app.add_startup_system(environment_setup_system);
+        }
+
         // car setup
         app.add_startup_system(setup_system) // setup the car model and environment
             .add_startup_systems(
@@ -105,5 +110,12 @@ pub fn setup_system(
     } else {
         build::build_model(&mut commands, &mut meshes, &mut materials);
     }
+}
+
+pub fn environment_setup_system(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     build_environment(&mut commands, &mut meshes, &mut materials);
 }
