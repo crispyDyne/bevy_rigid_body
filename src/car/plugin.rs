@@ -104,7 +104,7 @@ pub fn setup_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    if true {
+    if false {
         car_json();
         build_from_json::build_model(&mut commands, &mut meshes, &mut materials);
     } else {
