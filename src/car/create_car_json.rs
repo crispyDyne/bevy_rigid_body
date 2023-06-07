@@ -253,6 +253,8 @@ fn wheel_joints(
                 system_type: SystemTypeDef::Drive(DrivenWheelDef {
                     joint: name.clone(),
                     max_torque: 400.,
+                    max_speed: 50.,
+                    max_power: 100.0e3,
                 }),
             });
         }

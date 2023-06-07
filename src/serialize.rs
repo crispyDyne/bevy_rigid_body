@@ -86,6 +86,8 @@ pub struct SteeringDef {
 pub struct DrivenWheelDef {
     pub joint: String,
     pub max_torque: f32,
+    pub max_speed: f32,
+    pub max_power: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

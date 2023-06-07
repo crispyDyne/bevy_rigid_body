@@ -162,15 +162,25 @@ pub fn steering_system(mut joints: Query<(&mut Joint, &Steering)>, control: Res<
 #[derive(Component)]
 pub struct DrivenWheel {
     pub max_torque: f32,
+    pub max_speed: f32,
+    pub max_power: f32,
 }
 
 impl DrivenWheel {
-    pub fn new(max_torque: f32) -> Self {
-        Self { max_torque }
+    pub fn new(max_torque: f32, max_speed: f32, max_power: f32) -> Self {
+        Self {
+            max_torque,
+            max_speed,
+            max_power,
+        }
     }
 
     pub fn from_def(driven_wheel_def: &DrivenWheelDef) -> Self {
-        Self::new(driven_wheel_def.max_torque)
+        Self::new(
+            driven_wheel_def.max_torque,
+            driven_wheel_def.max_speed,
+            driven_wheel_def.max_power,
+        )
     }
 }
 
@@ -179,7 +189,10 @@ pub fn driven_wheel_system(
     control: Res<CarControl>,
 ) {
     for (mut joint, driven_wheel) in joints.iter_mut() {
-        joint.tau += control.throttle * driven_wheel.max_torque;
+        let power_limited_torque = (driven_wheel.max_power / joint.qd).abs();
+        if joint.qd.abs() < driven_wheel.max_speed {
+            joint.tau += control.throttle * driven_wheel.max_torque.min(power_limited_torque);
+        }
     }
 }
 
@@ -200,6 +213,6 @@ impl BrakeWheel {
 
 pub fn brake_wheel_system(mut joints: Query<(&mut Joint, &BrakeWheel)>, control: Res<CarControl>) {
     for (mut joint, brake_wheel) in joints.iter_mut() {
-        joint.tau += -control.brake * brake_wheel.max_torque * joint.qd.signum();
+        joint.tau += -control.brake * brake_wheel.max_torque * joint.qd.min(1.).max(-1.);
     }
 }

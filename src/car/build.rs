@@ -234,9 +234,15 @@ fn build_wheel(
     add_tire_contact(&mut wheel_e);
 
     if driven {
-        wheel_e.insert(DrivenWheel { max_torque: 200. });
+        wheel_e.insert(DrivenWheel {
+            max_torque: 400.,
+            max_speed: 100.,
+            max_power: 100.0e3,
+        });
     }
-    wheel_e.insert(BrakeWheel { max_torque: 450. });
+    wheel_e.insert(BrakeWheel {
+        max_torque: if driven { 800. } else { 400. },
+    });
 
     wheel_e.set_parent(parent_id);
     let wheel_id = wheel_e.id();
